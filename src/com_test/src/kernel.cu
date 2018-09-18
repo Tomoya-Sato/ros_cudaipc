@@ -32,7 +32,14 @@ extern "C" __global__ void gpuMemorySet(int *data, int num)
     }
 }
 
-unsigned char* GpuIpcTest::get_handle_buffer()
+void GpuIpcTest::initGpuMemory()
+{
+    cudaMalloc((void**)&data, DSIZE*sizeof(char));
+
+    return;
+}
+
+unsigned char* GpuIpcTest::getHandleBuffer()
 {
     cudaIpcMemHandle_t my_handle;
     handle_buffer = (unsigned char*)malloc(sizeof(my_handle)+1);
@@ -40,7 +47,6 @@ unsigned char* GpuIpcTest::get_handle_buffer()
     char str[DSIZE];
     scanf("%s", str);
 
-    checkCudaErrors(cudaMalloc((void**)&data, DSIZE*sizeof(char)));
     checkCudaErrors(cudaMemcpy(data, str, DSIZE*sizeof(char), cudaMemcpyHostToDevice));
 
     char tmp[DSIZE];
@@ -48,13 +54,17 @@ unsigned char* GpuIpcTest::get_handle_buffer()
     
     checkCudaErrors(cudaIpcGetMemHandle(&my_handle, data));
 
-    unsigned char *buf = (unsigned char*)malloc(sizeof(unsigned char)*(sizeof(my_handle)+1));
     memset(handle_buffer, 0, sizeof(my_handle)+1);
     memcpy(handle_buffer, (unsigned char*)(&my_handle), sizeof(my_handle));
 
-    memcpy(buf, handle_buffer, sizeof(my_handle));
+    return handle_buffer;
+}
 
-    return buf;
+void GpuIpcTest::freeHandleBuffer()
+{
+    free(handle_buffer);
+
+    return;
 }
 
 void GpuIpcTest::printDeviceMemory()
@@ -65,7 +75,7 @@ void GpuIpcTest::printDeviceMemory()
     printf("%s\n", tmp);
 }
 
-void GpuIpcTest::free_resources()
+void GpuIpcTest::freeResources()
 {
     checkCudaErrors(cudaFree(data));
     free(handle_buffer);

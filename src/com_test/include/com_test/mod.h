@@ -1,8 +1,8 @@
 #ifndef MOD_H
 #define MOD_H
 
-#include "com_test/gpu_handle.h"
+#include "com_test/gpuInfo.h"
 
-void modifyDeviceMemory(com_test::gpu_handle msg);
+bool modifyDeviceMemory(com_test::gpuInfo::Request &req);
 
 #endif

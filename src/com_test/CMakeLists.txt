@@ -49,19 +49,15 @@ find_package(CUDA 8.0 REQUIRED)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  MultiArrayDimension.msg
-  MultiArrayLayout.msg
-  gpu_handle.msg
-)
+## add_message_files(
+##   FILES
+## )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  gpuInfo.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -116,13 +112,13 @@ catkin_package(
 ## Build ##
 ###########
 
-set(PUB_SRC
-  src/pub.cpp
+set(CLIENT_SRC
+  src/client.cpp
   src/kernel.cu
 )
 
-set(SUB_SRC
-  src/sub.cpp
+set(SERVER_SRC
+  src/server.cpp
   src/mod.cu
 )
 
@@ -213,7 +209,7 @@ include_directories(
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-cuda_add_executable(gpu_publisher ${PUB_SRC})
-target_link_libraries(gpu_publisher ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
-cuda_add_executable(gpu_subscriber ${SUB_SRC})
-target_link_libraries(gpu_subscriber ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
+cuda_add_executable(gpu_manager ${CLIENT_SRC})
+target_link_libraries(gpu_manager ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
+cuda_add_executable(gpu_server ${SERVER_SRC})
+target_link_libraries(gpu_server ${catkin_LIBRARIES} ${CUDA_LIBRARIES})

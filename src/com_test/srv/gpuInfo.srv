@@ -1,0 +1,4 @@
+uint8[] devPtr
+int16 size
+---
+bool result

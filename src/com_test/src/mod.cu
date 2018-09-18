@@ -1,7 +1,5 @@
 #include "com_test/mod.h"
-#include "std_msgs/MultiArrayLayout.h"
-#include "std_msgs/MultiArrayDimension.h"
-#include "com_test/gpu_handle.h"
+#include "com_test/gpuInfo.h"
 #include <stdio.h>
 
 #define DSIZE 256
@@ -17,14 +15,14 @@ inline void gassert(cudaError_t err_code, const char *file, int line)
 
 #define checkCudaErrors(val) gassert(val, __FILE__, __LINE__)
 
-void modifyDeviceMemory(com_test::gpu_handle msg)
+bool modifyDeviceMemory(com_test::gpuInfo::Request &req)
 {
 
     cudaIpcMemHandle_t my_handle;
 
     unsigned char buf[64];
     for (int i = 0; i < 64; i++) {
-        buf[i] = msg.data[i];
+        buf[i] = req.devPtr[i];
     }
 
     memcpy((unsigned char*)&my_handle, buf, sizeof(my_handle));
@@ -33,10 +31,13 @@ void modifyDeviceMemory(com_test::gpu_handle msg)
 
     checkCudaErrors(cudaIpcOpenMemHandle((void**)&data, my_handle, cudaIpcMemLazyEnablePeerAccess));
 
-    char tmp[DSIZE];
-    checkCudaErrors(cudaMemcpy(tmp, data, sizeof(char)*DSIZE, cudaMemcpyDeviceToHost));
+    char *tmp = (char*)malloc(sizeof(char)*req.size);
+    checkCudaErrors(cudaMemcpy(tmp, data, sizeof(char)*req.size, cudaMemcpyDeviceToHost));
 
-    printf("%s\n", tmp);
+    printf("gpu memory: %s\n", tmp);
 
-    return;
+    checkCudaErrors(cudaIpcCloseMemHandle(data));
+    free(tmp);
+
+    return true;
 }
