@@ -19,6 +19,7 @@ inline void gassert(cudaError_t err_code, const char *file, int line)
 
 GpuIpcTest::GpuIpcTest()
 {
+    bufCounter = 0;
     return;
 }
 
@@ -32,29 +33,61 @@ extern "C" __global__ void gpuMemorySet(int *data, int num)
     }
 }
 
-unsigned char* GpuIpcTest::get_handle_buffer()
+void GpuIpcTest::initGpuMemory()
+{
+    cudaMalloc((void**)&data, DSIZE*sizeof(char));
+
+    return;
+}
+
+unsigned char* GpuIpcTest::getHandleBuffer()
 {
     cudaIpcMemHandle_t my_handle;
     handle_buffer = (unsigned char*)malloc(sizeof(my_handle)+1);
 
-    char str[DSIZE];
-    scanf("%s", str);
+    checkCudaErrors(cudaMemcpy(data, buf[0], sizeBuffer[0]*sizeof(char), cudaMemcpyHostToDevice));
 
-    checkCudaErrors(cudaMalloc((void**)&data, DSIZE*sizeof(char)));
-    checkCudaErrors(cudaMemcpy(data, str, DSIZE*sizeof(char), cudaMemcpyHostToDevice));
-
-    char tmp[DSIZE];
-    checkCudaErrors(cudaMemcpy(tmp, data, DSIZE*sizeof(char), cudaMemcpyDeviceToHost));
-    
     checkCudaErrors(cudaIpcGetMemHandle(&my_handle, data));
 
-    unsigned char *buf = (unsigned char*)malloc(sizeof(unsigned char)*(sizeof(my_handle)+1));
     memset(handle_buffer, 0, sizeof(my_handle)+1);
     memcpy(handle_buffer, (unsigned char*)(&my_handle), sizeof(my_handle));
 
-    memcpy(buf, handle_buffer, sizeof(my_handle));
+    free(buf[0]);
+    for (int i = 0; i < bufCounter; i++) {
+        buf[i] = buf[i+1];
+        sizeBuffer[i] = sizeBuffer[i+1];
+    }
 
-    return buf;
+    bufCounter--;
+
+    return handle_buffer;
+}
+
+void GpuIpcTest::storeBuffer(const char *str, const int size)
+{
+    if (bufCounter == 10) {
+        fprintf(stderr, "pointcloud buffer overflow.\n");
+        exit(EXIT_FAILURE);
+    }
+    buf[bufCounter] = (char*)malloc(sizeof(char)*size);
+    memcpy(buf[bufCounter], str, sizeof(char)*size);
+
+    sizeBuffer[bufCounter] = size;
+
+    bufCounter++;
+    
+    return;
+}
+
+int GpuIpcTest::getSize() {
+    return sizeBuffer[0];
+}
+
+void GpuIpcTest::freeHandleBuffer()
+{
+    free(handle_buffer);
+
+    return;
 }
 
 void GpuIpcTest::printDeviceMemory()
@@ -65,10 +98,15 @@ void GpuIpcTest::printDeviceMemory()
     printf("%s\n", tmp);
 }
 
-void GpuIpcTest::free_resources()
+void GpuIpcTest::freeResources()
 {
     checkCudaErrors(cudaFree(data));
-    free(handle_buffer);
     
     return;
+}
+
+bool GpuIpcTest::notEmpty()
+{
+    if (bufCounter == 0) return false;
+    else return true;
 }
