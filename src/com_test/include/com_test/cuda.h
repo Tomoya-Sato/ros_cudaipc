@@ -6,16 +6,23 @@ class GpuIpcTest
     public:
 
     GpuIpcTest();
-    unsigned char *get_handle_buffer();
+    void initGpuMemory();
+    unsigned char *getHandleBuffer();
     void printDeviceMemory();
-    void free_resources();
+    void freeResources();
+    void freeHandleBuffer();
+    void storeBuffer(const char *str, const int size);
+    int getSize();
+    bool notEmpty();
 
 
     private:
 
     char *data;
     unsigned char *handle_buffer;
-
+    char *buf[10];
+    int sizeBuffer[10];
+    int bufCounter;
 };
 
 #endif

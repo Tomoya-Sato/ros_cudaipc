@@ -126,6 +126,10 @@ set(SUB_SRC
   src/mod.cu
 )
 
+set(LIDAR_SRC
+  src/lidar.cpp
+)
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
@@ -217,3 +221,5 @@ cuda_add_executable(gpu_publisher ${PUB_SRC})
 target_link_libraries(gpu_publisher ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
 cuda_add_executable(gpu_subscriber ${SUB_SRC})
 target_link_libraries(gpu_subscriber ${catkin_LIBRARIES} ${CUDA_LIBRARIES})
+add_executable(pseudo_lidar ${LIDAR_SRC})
+target_link_libraries(pseudo_lidar ${catkin_LIBRARIES})

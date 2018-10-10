@@ -33,10 +33,16 @@ void modifyDeviceMemory(com_test::gpu_handle msg)
 
     checkCudaErrors(cudaIpcOpenMemHandle((void**)&data, my_handle, cudaIpcMemLazyEnablePeerAccess));
 
-    char tmp[DSIZE];
-    checkCudaErrors(cudaMemcpy(tmp, data, sizeof(char)*DSIZE, cudaMemcpyDeviceToHost));
+    char *tmp = (char*)malloc(sizeof(char)*(msg.size+1));
+    checkCudaErrors(cudaMemcpy(tmp, data, sizeof(char)*msg.size, cudaMemcpyDeviceToHost));
 
-    printf("%s\n", tmp);
+    for (int i = 0; i < msg.size; i++) {
+        printf("%c", tmp[i]);
+    }
+    printf("\n");
+
+    checkCudaErrors(cudaIpcCloseMemHandle(data));
+    free(tmp);
 
     return;
 }
