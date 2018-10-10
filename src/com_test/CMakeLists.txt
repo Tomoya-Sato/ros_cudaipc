@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(com_test)
 
+find_package(PCL REQUIRED)
+
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
 
@@ -11,9 +13,14 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   std_msgs
   message_generation
+  pcl_ros
+  pcl_conversions
 )
 
 find_package(CUDA 8.0 REQUIRED)
+
+
+set(CMAKE_CXX_FLAGS"-std=c++0x ${CMAKE_CXX_FLAGS}")
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -108,7 +115,7 @@ generate_messages(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES com_test
-#  CATKIN_DEPENDS roscpp std_msgs
+   CATKIN_DEPENDS roscpp std_msgs 
 #  DEPENDS system_lib
 )
 
